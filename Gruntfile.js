@@ -9,18 +9,34 @@ module.exports = function(grunt) {
             html: {
                 files: ['**/*.html']
             },
+            less: {
+                tasks: 'less:dev',
+                files: ['**/*.less']
+            },
             options: {
-                liveload: true
+                livereload: true
+            }
+        },
+        less: {
+            dev: {
+                files: {
+                    'client/static/css/style.css': 'client/static/less/style.less'
+                }
             }
         },
         connect: {
-            options: {
-                port: 8080
+            dev: {
+                options: {
+                    base: 'client',
+                    port: 8080
+                }
             }
         },
         open: {
-            path: 'http://localhost:<%= connect.options.port %>',
-            app: 'Chrome'
+            dev: {
+                path: 'http://localhost:<%= connect.dev.options.port %>',
+                app: 'Chrome'
+            }
         }
     });
 
@@ -29,8 +45,9 @@ module.exports = function(grunt) {
     }
 
     grunt.registerTask('default', [
-        'watch',
-        'connect',
-        'open'
+        'less:dev',
+        'connect:dev',
+        'open:dev',
+        'watch'
     ]);
 };

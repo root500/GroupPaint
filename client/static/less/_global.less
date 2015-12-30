@@ -1,0 +1,241 @@
+// --------------------------------------------------
+// _global.less : global variables & mixins
+// --------------------------------------------------
+
+// media query
+// --------------------------------------------------
+@laptop:		~"only all and (max-width: 1279px)";
+@portrait:		~"only all and (max-width: 1023px)";
+@mobile-l:		~"only all and (max-width: 767px)";
+@mobile-s:		~"only all and (max-width: 640px)";
+@mobile:		~"only all and (max-width: 480px)";
+
+@desktop:		~"only all and (min-width: 1440px)";
+@wide:			~"only all and (min-width: 1600px)";
+
+@hires:         ~"(-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)";
+
+// layout
+// --------------------------------------------------
+@w-default: 1120px;
+@w-portrait: 1024px;
+@w-mobile-l: 768px;
+@w-mobile: 320px;
+
+@p-default: 80 / @w-default * 100%;
+@p-portrait: 60 / @w-portrait * 100%;
+@p-mobile: 15 / @w-mobile * 100%;
+
+
+// fonts
+// --------------------------------------------------
+@font-default: ~"'Malgun Gothic', '맑은 고딕', '돋움', dotum, sans-serif";
+@letter-spacing: -0.03em;
+
+
+// image path
+// --------------------------------------------------
+@img: "../images";
+@i: "@{img}/a/icons.png";
+
+
+// color guide
+// --------------------------------------------------
+@white: #fff;
+
+@smoke: #f5f5f5;
+
+@silver-light: #e0e0e0;
+@silver: #ccc;
+@silver-dark: #aaa;
+
+@gray-light: #999;
+@gray: #666;
+@gray-dark: #333;
+@gray-darker: #222;
+
+@black: #000;
+
+@brand: #999;
+
+
+// mixins
+// --------------------------------------------------
+.inline-block() {
+	display: inline-block;
+	*display: inline;
+	*zoom: 1;
+}
+
+.clearfix() {
+	zoom: 1;
+
+	&:before {
+		content: '';
+		display: block;
+	}
+
+	&:after {
+		content: '';
+		display: table;
+		clear: both;
+	}
+}
+
+.bg-halfsize() {
+	background-size: 250px auto;
+}
+
+.full() {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
+.full-pos() {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+}
+
+.ellipsis() {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	word-wrap: normal;
+	display: block;
+}
+
+.ellipsis(@line) { // multiline
+	overflow: hidden;
+	display: -webkit-box;
+	-webkit-line-clamp: @line;
+	-webkit-box-orient: vertical;
+	text-overflow: ellipsis;
+	word-wrap: normal;
+}
+
+.opacity(@value) {
+	@valuePercent: @value * 100;
+	-ms-filter: ~"progid:DXImageTransform.Microsoft.Alpha(Opacity=@{valuePercent})";
+	filter: alpha(opacity=@valuePercent);
+	opacity: @value;
+}
+
+.transition(@value1,@value2:_END_,...) {
+	@value: ~`"@{arguments}".replace(/[\[\]]|\,\s_END_/g, '')`;
+
+	-webkit-transition: ~`"@{value}".replace('--', '-webkit-')`;
+	   -moz-transition: ~`"@{value}".replace('--', '-moz-')`;
+	     -o-transition: ~`"@{value}".replace('--', '-o-')`;
+	        transition: ~`"@{value}".replace('--', '')`;
+}
+
+.transition-delay(@value1,@value2:_END_,...) {
+	@value: ~`"@{arguments}".replace(/[\[\]]|\,\s_END_/g, '')`;
+
+	-webkit-transition-delay: @value;
+	   -moz-transition-delay: @value;
+	     -o-transition-delay: @value;
+	        transition-delay: @value;
+}
+
+.transform(...) {
+	-webkit-transform: @arguments;
+	   -moz-transform: @arguments;
+	    -ms-transform: @arguments;
+	     -o-transform: @arguments;
+	        transform: @arguments;
+}
+
+.transform-origin(@value) {
+	-webkit-transform-origin: @value;
+	   -moz-transform-origin: @value;
+	    -ms-transform-origin: @value;
+	     -o-transform-origin: @value;
+	        transform-origin: @value;
+}
+
+.transform-style(@value) {
+	-webkit-transform-style: @value;
+	        transform-style: @value;
+}
+
+.perspective(@value) {
+	-webkit-perspective: @value;
+	        perspective: @value;
+}
+
+.perspective-origin(@value) {
+	-webkit-perspective-origin: @value;
+	        perspective-origin: @value;
+}
+
+.shadow(...) {
+	-webkit-box-shadow: @arguments;
+	   -moz-box-shadow: @arguments;
+	        box-shadow: @arguments;
+}
+.ms-shadow(@wide, @direction, @color) {
+	-ms-filter: progid:DXImageTransform.Microsoft.Shadow(Strength='@{wide}', Direction='@{direction}', Color='@{color}');
+	    filter: progid:DXImageTransform.Microsoft.Shadow(Strength='@{wide}', Direction='@{direction}', Color='@{color}');
+}
+
+.box-sizing(@sizing: border-box) {
+	-webkit-box-sizing: @sizing;
+	   -moz-box-sizing: @sizing;
+	    -ms-box-sizing: @sizing;
+	        box-sizing: @sizing;
+}
+
+.bg-gradient(@start, @end, @bg: mix(@start, @end), @end-point: 100%) {
+	background: @bg; // Old browsers
+	background: -moz-linear-gradient(top, @start 0%, @end 100%); // FF3.6+
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, @start), color-stop(100%, @end)); // Chrome,Safari4+
+	background: -webkit-linear-gradient(top, @start 0%, @end 100%); // Chrome10+,Safari5.1+
+	background: -o-linear-gradient(top, @start 0%, @end 100%); // Opera 11.10+
+	background: -ms-linear-gradient(top, @start 0%, @end 100%); // IE10+
+	background: linear-gradient(to bottom, @start 0%, @end 100%); // W3C
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='@{start}', endColorstr='@{end}',GradientType=0); // IE6-9
+}
+
+.bg-gradient(auto, @color, @range: 8%) {
+	.bg-gradient(lighten(@color, @range), darken(@color, @range), @color);
+}
+
+.radius(@r) {
+	-webkit-border-radius: @r;
+	   -moz-border-radius: @r;
+	        border-radius: @r;
+}
+
+.display-flex() {
+	display: -webkit-flex;
+	display:         flex;
+	-webkit-flex-flow: row wrap;
+	   -moz-flex-flow: row wrap;
+	    -ms-flex-flow: row wrap;
+	     -o-flex-flow: row wrap;
+	        flex-flow: row wrap;
+}
+
+.v-mid(@contSelector) {
+	white-space: nowrap;
+
+	@{contSelector} {
+		display: inline-block;
+		width: 100%;
+		white-space: normal;
+		vertical-align: middle;
+	}
+
+	&:after {
+		content: "";
+		.inline-block();
+		height: 100%;
+		vertical-align: middle;
+	}
+}
