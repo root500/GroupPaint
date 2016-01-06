@@ -1,82 +1,97 @@
-define(['global', 'jquery', 'socket'], function(g, $, socket) {
-    var $stage = $('#stage'),
-        stage = $stage[0],
-        context = stage.getContext('2d'),
-        width = stage.width,
-        height = stage.height;
+define(['global', 'class', 'jquery'], function(g, Class, $) {
+    "use strict";
 
-    function resizeCanvas() {
-        function resize() {
-            var save = context.getImageData(0, 0, width, height);
+    return Class().extend({
+        initialize: function() {
+            this.$container = $('.canvas-container');
 
-            stage.width = g.width();
-            stage.height = g.height();
+            this.$stage = $('#stage');
+            this.main = this.$stage[0];
+            this.ctx = this.main.getContext('2d');
 
-            context.putImageData(save, 0, 0, 0, 0, width, height);
-            width = stage.width;
-            height = stage.height;
-        }
+            this.$buffer = $('#buffer');
+            this.buffer = this.$buffer[0];
+            this.bufferCtx = this.buffer.getContext('2d');
 
-        g.$win.on('resize', resize);
-        resize();
-    }
+            this.main.width = 1024;
+            this.main.height = 720;
+            this.buffer.width = this.main.width;
+            this.buffer.height = this.main.height;
 
-    function setDraw() {
-        var sx, sy,
-            cx, cy,
-            isDown = false;
+            this.width = this.main.width;
+            this.height = this.main.height;
 
-        $stage.on({
-            'mousedown': function(event) {
-                isDown = true;
-                sx = event.clientX;
-                sy = event.clientY;
+            this.draw = this.draw(this);
+            this.cursor = this.cursor(this);
+        },
 
-                context.lineJoin = 'round';
-                context.lineCap = 'round';
-                context.lineWidth = 2;
-                //context.shadowColor = '#000';
-                //context.shadowBlur = 1;
+        // 커서 조정
+        cursor: function(self) {
+            return {
+                add: function(id, mouse) {
+                    var $cursor = $(g.tmpl.cursor({ id: id }));
 
-                context.beginPath();
-                context.moveTo(sx, sy);
-                context.lineTo(sx, sy);
-                context.stroke();
-            },
-            'mousemove': function(event) {
-                cx = event.clientX;
-                cy = event.clientY;
-
-                socket.emit('cursor', cx + ',' + cy);
-
-                if(isDown) {
-                    context.moveTo(sx, sy);
-                    context.lineTo(cx, cy);
-                    context.stroke();
-                    context.closePath();
-                    context.beginPath();
-
-                    sx = cx;
-                    sy = cy;
+                    $cursor.css({
+                        left: mouse.x,
+                        top: mouse.y
+                    }).appendTo(self.$container).fadeIn();
+                },
+                move: function(id, mouse) {
+                    $('#cursor-' + id).css({
+                        left: mouse.x,
+                        top: mouse.y
+                    });
+                },
+                remove: function(id) {
+                    $('#cursor-' + id).fadeOut(function() {
+                        $(this).remove();
+                    });
                 }
-            },
-            'mouseup': function(event) {
-                isDown = false;
-                context.closePath();
-                context.stroke();
             }
-        });
-    }
+        },
 
-    function init() {
-        setDraw();
-        resizeCanvas();
-    }
+        // 그리기
+        draw: function(self) {
+            return {
+                begin: function(x, y) {
+                    self.ctx.beginPath();
+                    self.ctx.moveTo(x, y);
+                    self.ctx.lineTo(x - 0.1, y);
+                    self.ctx.stroke();
 
-    return {
-        init: init,
-        $el: $stage,
-        el: stage,
-        ctx: context
-    };
+                    this.px = x;
+                    this.py = y;
+                    //this.history = [[x, y]];
+                },
+                drawing: function(x, y) {
+                    self.ctx.moveTo(this.px, this.py);
+                    self.ctx.lineTo(x, y);
+                    self.ctx.stroke();
+                    self.ctx.closePath();
+                    self.ctx.beginPath();
+
+                    this.px = x;
+                    this.py = y;
+                    //this.history.push([x, y]);
+                },
+                end: function() {
+                    //var firstPos = this.history.shift();
+
+                    self.ctx.stroke();
+                    self.ctx.closePath();
+                    //self.ctx.clearRect(0, 0, self.width, self.height);
+
+                    /*self.mainCtx.beginPath();
+                    self.mainCtx.moveTo(firstPos[0], firstPos[1]);
+
+                    _.each(this.history, function(pos) {
+                        self.mainCtx.lineTo(pos[0], pos[1]);
+                    });
+
+                    self.mainCtx.stroke();
+                    self.mainCtx.closePath();*/
+                }
+            };
+        }
+    });
 });

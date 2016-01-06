@@ -1,46 +1,90 @@
-var app = require('express')(),
-    http = require('http').Server(app),
-    io = require('socket.io')(http);
+var app = require('http').createServer(),
+    io = require('socket.io')(app);
 
-var ioEvent = {};
+var ioEvent = {},
+    clients = {};
 
-http.listen(3000, function(){
+app.listen(3000, function(){
     console.log('listening on *:3000');
 });
 
-function getSocketIDList(myID) {
-    var idList = [];
+function getClients(myID) {
+    var clients = [];
 
     io.sockets.sockets.forEach(function(el, idx) {
-        if(el.id !== myID) idList.push(el.id);
+        if(el.id !== myID) clients.push(el.id);
     });
 
-    idList.unshift(myID);
+    clients.unshift(myID);
 
-    return idList;
+    return clients;
 }
 
-ioEvent = {
-    cursor: function(pos) {
-        //console.log(pos);
+ioEvents = {
+    mousedown: function(pos) {
+        console.log('mousedown: ', this.id, pos.x, pos.y);
 
-        pos = pos.split(',');
-        io.emit('cursor', JSON.stringify({
+        clients[this.id].mouse = {
+            isDown: true,
+            x: pos.x,
+            y: pos.y
+        };
+
+        this.broadcast.emit('mousedown', {
             id: this.id,
-            pos: pos
-        }));
+            mouse: clients[this.id].mouse
+        });
+    },
+    mousemove: function(pos) {
+        console.log('mousemove: ', this.id, pos.x, pos.y);
+
+        clients[this.id].mouse.x = pos.x;
+        clients[this.id].mouse.y = pos.y;
+
+        this.broadcast.emit('mousemove', {
+            id: this.id,
+            mouse: pos
+        });
+    },
+    mouseup: function() {
+        console.log('mouseup: ', this.id);
+
+        clients[this.id].mouse.isDown = false;
+
+        this.broadcast.emit('mouseup', {
+            id: this.id
+        });
     }
 };
 
-io.on('connection', function(socket){
-    var idList = getSocketIDList(socket.id);
+io.on('connection', function(socket) {
+    console.log('new user: ', socket.id, '(' + io.sockets.sockets.length + ')');
 
-    console.log('새 사용자 접속: ', socket.id);
+    // 새 사용자 설정
+    clients[socket.id] = {
+        mouse: {
+            isDown: false,
+            x: 0,
+            y: 0
+        }
+    };
+    socket.emit('connected', {
+        id: socket.id,
+        clients: clients
+    });
+    socket.broadcast.emit('join', socket.id);
 
-    socket.emit('idList', idList);
-    socket.broadcast.emit('newID', socket.id);
+    Object.keys(ioEvents).forEach(function(func) {
+        socket.on(func, function(data) {
+            ioEvents[func].call(socket, data);
+        });
+    });
 
-    socket.on('cursor', function(data) {
-        ioEvent.cursor.call(socket, data)
+    // 끊기
+    socket.on('disconnect', function() {
+        console.log('user disconnected:', socket.id);
+
+        delete clients[socket.id];
+        socket.broadcast.emit('leave', socket.id, '(' + io.sockets.sockets.length + ')');
     });
 });

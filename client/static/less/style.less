@@ -6,11 +6,67 @@
 @import "_global";
 @import "_base";
 
+html {
+    height: 100%;
+}
 body {
     overflow: hidden;
+    height: 100%;
+    background-color: #999;
+}
+.canvas-container {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin: -720 / 2px 0 0 -1024 / 2px;
+    background: @white;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .3);
 }
 .stage {
-    width: 100%;
-    height: 100%;
+    width: 1024px;
+    height: 720px;
     cursor: crosshair;
+
+    &-buffer {
+        position: absolute;
+        left: 0;
+        top: 0;
+        pointer-events: none;
+    }
+}
+.cursor {
+    position: absolute;
+    display: none;
+    left: 0;
+    top: 0;
+    pointer-events: none;
+
+    &:before,
+    &:after {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        background: @black;
+    }
+    &:before {
+        width: 11px;
+        height: 1px;
+        margin-left: -5px;
+    }
+    &:after {
+        width: 1px;
+        height: 11px;
+        margin-top: -5px;
+    }
+    &-label {
+        display: block;
+        margin-left: 10px;
+        margin-top: 10px;
+        padding: 0 3px;
+        font-size: 1.1em;
+        white-space: nowrap;
+        border: 1px solid @gray;
+        background-color: @white;
+    }
 }

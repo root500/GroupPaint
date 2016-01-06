@@ -14,7 +14,7 @@ module.exports = function(grunt) {
                 files: ['**/*.less']
             },
             options: {
-                livereload: true
+                livereload: 35730,
             }
         },
         less: {

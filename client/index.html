@@ -3,11 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <title>GroupPaint</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-<canvas id="stage" class="stage"></canvas>
+<div class="canvas-container">
+    <canvas id="stage" class="stage"></canvas>
+    <canvas id="buffer" class="stage stage-buffer"></canvas>
+</div>
 <div id="status" class="status"></div>
 </body>
 <script data-main="/static/js/main" src="/static/js/lib/require.js"></script>
+<script id="tmpl-cursor" type="text/underscore-template">
+<div id="cursor-<%= id %>" class="cursor">
+    <span class="cursor-label"><%= id %></span>
+</div>
+</script>
 </html>
