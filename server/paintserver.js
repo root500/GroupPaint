@@ -28,7 +28,7 @@ function getClients(myID) {
 
 ioEvents = {
     buffer: function(data) {
-        console.log('buffer');
+        console.log('buffer', this.id, data.length);
 
         this.broadcast.emit('buffer', {
             id: this.id,
