@@ -8,71 +8,92 @@ requirejs(['config'], function() {
 
                 isMouseDown = false;
 
-            stage.initialize();
+            function addUser(id, mouse) {
+                sock.clients[id].stage = new Stage();
+                sock.clients[id].stage.initialize();
+                stage.cursor.add(id, mouse);
+            }
 
-            stage.$stage.on({
-                mousedown: function(event) {
-                    var x = event.offsetX,
-                        y = event.offsetY;
+            function initClient() {
+                stage.initialize();
 
-                    isMouseDown = true;
+                stage.$canvas.on({
+                    mousedown: function(event) {
+                        var x = event.offsetX,
+                            y = event.offsetY;
 
-                    sock.emit('mousedown', {
-                        x: x,
-                        y: y
-                    });
+                        isMouseDown = true;
 
-                    stage.draw.begin(x, y);
-                },
-                mousemove: function(event) {
-                    var x = event.offsetX,
-                        y = event.offsetY;
+                        sock.emit('mousedown', {
+                            x: x,
+                            y: y
+                        });
 
-                    sock.emit('mousemove', {
-                        x: x,
-                        y: y
-                    });
+                        stage.draw.begin(x, y);
+                    },
+                    mousemove: function(event) {
+                        var x = event.offsetX,
+                            y = event.offsetY;
 
-                    if(isMouseDown) {
-                        stage.draw.drawing(x, y);
+                        sock.emit('mousemove', {
+                            x: x,
+                            y: y
+                        });
+
+                        if(isMouseDown) {
+                            stage.draw.drawing(x, y);
+                        }
+                    },
+                    mouseup: function() {
+                        sock.emit('mouseup');
+
+                        if(isMouseDown) {
+                            var bufferData = stage.draw.end();
+
+                            isMouseDown = false;
+                            sock.emit('buffer', bufferData);
+                        }
                     }
-                },
-                mouseup: function() {
-                    sock.emit('mouseup');
-
-                    if(isMouseDown) {
-                        stage.draw.end();
-                        isMouseDown = false;
-                    }
-                }
-            });
-
-            sock.onConnected = function(id, clients) {
-                _.each(clients, function(client, idx) {
-                    stage.cursor.add(idx, client.mouse);
                 });
-            };
+            }
+
             sock.onJoin = function(id) {
-                stage.cursor.add(id, [0, 0]);
+                addUser(id, { x: 0, y: 0 });
             };
             sock.onLeave = function(id) {
                 stage.cursor.remove(id);
             };
 
+            sock.onBuffer = function(id, data) {
+                var bufferImg = new Image();
+
+                bufferImg.src = data;
+                stage.ctx.drawImage(bufferImg, 0, 0);
+                sock.clients[id].stage.draw.buffer.remove();
+            };
+
             sock.onMousedown = function(id, mouse) {
-                stage.draw.begin(mouse.x, mouse.y);
+                sock.clients[id].stage.draw.begin(mouse.x, mouse.y);
             };
             sock.onMousemove = function(id, mouse) {
                 stage.cursor.move(id, mouse);
 
                 if(sock.clients[id].mouse.isDown) {
-                    stage.draw.drawing(mouse.x, mouse.y);
+                    sock.clients[id].stage.draw.drawing(mouse.x, mouse.y);
                 }
             };
             sock.onMouseup = function(id, isDown) {
                 if(isDown) {
-                    stage.draw.end();
+                    sock.clients[id].stage.draw.end(true);
                 }
+            };
+
+            sock.onConnected = function(data) {
+                g.stage = data.stage;
+                initClient();
+                _.each(data.clients, function(client, _id) {
+                    addUser(_id, client.mouse);
+                });
             };
 
             sock.initialize();

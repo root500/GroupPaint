@@ -13,6 +13,7 @@ define(['global', 'class', 'jquery', 'socketio'], function(g, Class, $, io) {
                 'connected',
                 'join',
                 'leave',
+                'buffer',
                 'mousedown',
                 'mousemove',
                 'mouseup'
@@ -37,7 +38,7 @@ define(['global', 'class', 'jquery', 'socketio'], function(g, Class, $, io) {
             console.log('[socket/connected] id:', this.id, ', clients:', this.clients);
 
             if(typeof this.onConnected === 'function') {
-                this.onConnected(this.id, this.clients);
+                this.onConnected(data);
             }
         },
 
@@ -65,6 +66,13 @@ define(['global', 'class', 'jquery', 'socketio'], function(g, Class, $, io) {
 
             if(typeof this.onLeave === 'function') {
                 this.onLeave(data);
+            }
+        },
+
+        // 데이터 받기
+        buffer: function(data) {
+            if(typeof this.onBuffer === 'function') {
+                this.onBuffer(data.id, data.data);
             }
         },
 

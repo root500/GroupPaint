@@ -2,6 +2,12 @@ var app = require('http').createServer(),
     io = require('socket.io')(app);
 
 var ioEvent = {},
+    config = {
+        stage: {
+            width: 1024,
+            height: 768
+        }
+    },
     clients = {};
 
 app.listen(3000, function(){
@@ -21,6 +27,15 @@ function getClients(myID) {
 }
 
 ioEvents = {
+    buffer: function(data) {
+        console.log('buffer');
+
+        this.broadcast.emit('buffer', {
+            id: this.id,
+            data: data
+        });
+    },
+
     mousedown: function(pos) {
         console.log('mousedown: ', this.id, pos.x, pos.y);
 
@@ -70,6 +85,7 @@ io.on('connection', function(socket) {
     };
     socket.emit('connected', {
         id: socket.id,
+        stage: config.stage,
         clients: clients
     });
     socket.broadcast.emit('join', socket.id);

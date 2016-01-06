@@ -15,16 +15,14 @@ body {
     background-color: #999;
 }
 .canvas-container {
+    display: none;
     position: absolute;
     left: 50%;
     top: 50%;
-    margin: -720 / 2px 0 0 -1024 / 2px;
     background: @white;
     box-shadow: 0 10px 30px rgba(0, 0, 0, .3);
 }
-.stage {
-    width: 1024px;
-    height: 720px;
+.canvas {
     cursor: crosshair;
 
     &-buffer {
